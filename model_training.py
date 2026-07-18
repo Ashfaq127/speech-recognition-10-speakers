@@ -1,27 +1,51 @@
+import os
 import numpy as np
-
-def build_cnn_model(input_shape=(40, 32, 1), num_classes=10):
-    """
-    Simulates the CNN Model Architecture for 10-Speaker Identification.
-    """
-    print("[INFO] Constructing 2D Convolutional Neural Network (CNN)...")
-    print(f" -> Input Layer configured for MFCC shapes: {input_shape}")
-    print(" -> Added Conv2D + MaxPooling layers for spatial feature extraction.")
-    print(" -> Added Dropout (0.3) to prevent overfitting.")
-    print(f" -> Dense Output Layer configured with Softmax for {num_classes} classes.")
-    return "[SUCCESS] CNN Architecture Compiled."
-
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import joblib
 
 def train_and_evaluate_model():
+    data_path = "./data/processed/processed_data.npz"
+    if not os.path.exists(data_path):
+        print("[ERROR] Processed data not found! Run dataset_processor.py first.")
+        return
+        
     print("[INFO] Loading preprocessed MFCC matrices from dataset_processor.py...")
-    print("[INFO] Training Model for 25 Epochs...")
-    print(" -> Epoch 25/25 - loss: 0.2314 - accuracy: 0.9421 - val_loss: 0.2845 - val_accuracy: 0.9150")
-    print("[SUCCESS] Training Complete. Model Achieved 91.50% Validation Accuracy.")
-
+    data = np.load(data_path)
+    X = data['X']
+    y = data['y']
+    
+    print(f"[INFO] Loaded {X.shape[0]} samples with feature dimensions: {X.shape[1]}")
+    
+    # ডেটাকে ৮০% ট্রেইনিং এবং ২০% টেস্ট সেটে ভাগ করা
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+    
+    print("[INFO] Constructing Voice Identification Model (Random Forest)...")
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    
+    print("[INFO] Training Model...")
+    model.fit(X_train, y_train)
+    
+    # প্রেডিকশন এবং মূল্যায়ন
+    y_pred = model.predict(X_test)
+    train_acc = accuracy_score(y_train, model.predict(X_train))
+    val_acc = accuracy_score(y_test, y_pred)
+    
+    print(f"[SUCCESS] Training Complete.")
+    print(f" -> Training Accuracy: {train_acc * 100:.2f}%")
+    print(f" -> Validation Accuracy: {val_acc * 100:.2f}%")
+    
+    print("\n[EVALUATION REPORT] Classification Detail:")
+    speakers = [f"Speaker_{i:02d}" for i in range(1, 11)]
+    print(classification_report(y_test, y_pred, target_names=speakers))
+    
     print("\n[EVALUATION REPORT] Confusion Matrix Generated:")
-    print(" -> High precision observed across all 10 distinct speaker profiles.")
+    print(confusion_matrix(y_test, y_pred))
 
+    # মডেলটি ফাইল হিসেবে সেভ করা
+    joblib.dump(model, 'speaker_identification_model.pkl')
+    print("\n[SAVED] Model saved successfully as speaker_identification_model.pkl")
 
 if __name__ == "__main__":
-    build_cnn_model()
     train_and_evaluate_model()
