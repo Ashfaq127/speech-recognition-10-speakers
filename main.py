@@ -18,7 +18,7 @@ def train_and_evaluate_model():
     
     print(f"[INFO] Loaded {X.shape[0]} samples with feature dimensions: {X.shape[1]}")
     
-    # ডেটাকে ৮০% ট্রেইনিং এবং ২০% টেস্ট সেটে ভাগ করা
+    # Split dataset into 80% training and 20% validation sets with class stratification
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
     
     print("[INFO] Constructing Voice Identification Model (Random Forest)...")
@@ -27,7 +27,7 @@ def train_and_evaluate_model():
     print("[INFO] Training Model...")
     model.fit(X_train, y_train)
     
-    # প্রেডিকশন এবং মূল্যায়ন
+    # Generate predictions and calculate model accuracy
     y_pred = model.predict(X_test)
     train_acc = accuracy_score(y_train, model.predict(X_train))
     val_acc = accuracy_score(y_test, y_pred)
@@ -43,7 +43,7 @@ def train_and_evaluate_model():
     print("\n[EVALUATION REPORT] Confusion Matrix Generated:")
     print(confusion_matrix(y_test, y_pred))
 
-    # মডেলটি ফাইল হিসেবে সেভ করা
+    # Save trained model pipeline for future prediction tasks
     joblib.dump(model, 'speaker_identification_model.pkl')
     print("\n[SAVED] Model saved successfully as speaker_identification_model.pkl")
 

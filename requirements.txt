@@ -1,5 +1,9 @@
-﻿librosa
-scikit-learn
-numpy
-matplotlib
-joblib
+﻿librosa  # Audio processing and MFCC extraction
+
+scikit-learn  # Random Forest classifier and evaluation metrics
+
+numpy  # Array manipulation and .npz matrix storage
+
+matplotlib  # Confusion matrix and performance visualization
+
+joblib  # Model serialization (.pkl saving)
